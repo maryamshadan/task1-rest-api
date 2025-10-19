@@ -1,3 +1,4 @@
+// ...existing code...
 package com.kaiburr.taskapp.controller;
 
 import com.kaiburr.taskapp.model.Task;
@@ -10,11 +11,26 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+class RootController {
+
+    @GetMapping("/")
+    public String index() {
+        return "Backend is up and running! Visit /api/tasks to access the Task API.";
+    }
+}
+
+@RestController
 @RequestMapping("/api/tasks")
 public class TaskController {
 
     @Autowired
     private TaskService taskService;
+
+    // Root mapping for testing
+    @GetMapping("/")
+    public String home() {
+        return "Task API is running!";
+    }
 
     @PutMapping
     public ResponseEntity<?> createOrUpdateTask(@RequestBody Task task) {
@@ -40,9 +56,7 @@ public class TaskController {
     @GetMapping("/search")
     public ResponseEntity<?> searchTasks(@RequestParam String name) {
         List<Task> tasks = taskService.searchTasksByName(name);
-        if (tasks.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        if (tasks.isEmpty()) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(tasks);
     }
 
@@ -66,3 +80,4 @@ public class TaskController {
         }
     }
 }
+// ...existing code...
