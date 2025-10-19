@@ -1,257 +1,464 @@
 # Task 1: Java Backend and REST API
 
-Simple Spring Boot REST API to store, list, execute and delete shell-command tasks.
+This is a Spring Boot REST API application for managing and executing tasks. Tasks represent shell commands that can be stored, retrieved, executed, and managed through RESTful endpoints.
 
-## Project layout
-- src/main/java/com/kaiburr/taskapp
-  - model/Task.java
-  - model/TaskExecution.java
-  - controller/TaskController.java
-  - repository/TaskRepository.java
-  - service/TaskService.java
-  - Application.java
-- src/main/resources/application.properties
-- screenshots/
-- pom.xml
+## Project Structure
+
+```
+task1-rest-api/
+│
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/kaiburr/taskapp/
+│   │   │       ├── model/
+│   │   │       │   ├── Task.java
+│   │   │       │   └── TaskExecution.java
+│   │   │       ├── controller/
+│   │   │       │   └── TaskController.java
+│   │   │       ├── repository/
+│   │   │       │   └── TaskRepository.java
+│   │   │       ├── service/
+│   │   │       │   └── TaskService.java
+│   │   │       └── Application.java
+│   │   └── resources/
+│   │       └── application.properties
+│   └── test/
+│       └── java/
+│           └── com/kaiburr/taskapp/
+│               └── TaskAPITests.java
+│
+├── pom.xml
+├── README.md
+├── screenshots/
+│   ├── get-tasks.png
+│   ├── add-task.png
+│   ├── delete-task.png
+│   └── find-task.png
+└── .gitignore
+```
 
 ## Prerequisites
-- Java 17+
+
+- Java 17 or higher
 - Maven 3.6+
-- MongoDB (running locally or remotely)
-- Git (to push to GitHub)
+- MongoDB 4.4+ (running locally or remotely)
 
-## Quick start (Windows PowerShell)
-1. Start MongoDB
-```powershell
-# if installed as a service
-net start MongoDB
+## Installation and Setup
 
-# or run manually (adjust dbpath)
-& "C:\Program Files\MongoDB\Server\6.0\bin\mongod.exe" --dbpath "C:\data\db"
+### 1. Install MongoDB
+
+**On Ubuntu/Debian:**
+```bash
+sudo apt-get update
+sudo apt-get install mongodb
+sudo systemctl start mongodb
+sudo systemctl enable mongodb
 ```
 
-2. Build and run
-```powershell
-mvn clean package
+**On macOS:**
+```bash
+brew tap mongodb/brew
+brew install mongodb-community
+brew services start mongodb-community
+```
+
+**On Windows:**
+Download and install from [MongoDB Official Website](https://www.mongodb.com/try/download/community)
+
+### 2. Clone the Repository
+
+```bash
+git clone <your-repo-url>
+cd task1-rest-api
+```
+
+### 3. Configure MongoDB Connection
+
+Edit `src/main/resources/application.properties` if needed:
+
+```properties
+spring.data.mongodb.host=localhost
+spring.data.mongodb.port=27017
+spring.data.mongodb.database=kaiburr_tasks
+```
+
+### 4. Build the Project
+
+```bash
+mvn clean install
+```
+
+### 5. Run the Application
+
+```bash
 mvn spring-boot:run
 ```
-App will run on http://localhost:8080 by default.
 
-## Required JSON fields
-When creating a task, include the "command" field. Example:
+Or run the JAR file:
+
+```bash
+java -jar target/task-app-1.0.0.jar
+```
+
+The application will start on `http://localhost:8080`
+
+## API Endpoints
+
+### 1. Get All Tasks
+
+**Endpoint:** `GET /api/tasks`
+
+**Description:** Returns all tasks from the database
+
+**Example:**
+```bash
+curl -X GET http://localhost:8080/api/tasks
+```
+
+**Response:**
+```json
+[
+  {
+    "id": "123",
+    "name": "Print Hello",
+    "owner": "John Smith",
+    "command": "echo Hello World",
+    "taskExecutions": []
+  }
+]
+```
+
+### 2. Get Task by ID
+
+**Endpoint:** `GET /api/tasks?id={taskId}`
+
+**Description:** Returns a single task by ID or 404 if not found
+
+**Example:**
+```bash
+curl -X GET "http://localhost:8080/api/tasks?id=123"
+```
+
+### 3. Create/Update Task
+
+**Endpoint:** `PUT /api/tasks`
+
+**Description:** Creates or updates a task. Validates the command for safety.
+
+**Example:**
+```bash
+curl -X PUT http://localhost:8080/api/tasks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "123",
+    "name": "Print Hello",
+    "owner": "John Smith",
+    "command": "echo Hello World"
+  }'
+```
+
+**Response:**
 ```json
 {
-  "name": "Test Task",
-  "description": "My first task",
-  "command": "echo hello"
+  "id": "123",
+  "name": "Print Hello",
+  "owner": "John Smith",
+  "command": "echo Hello World",
+  "taskExecutions": []
 }
 ```
 
-## API endpoints
-- Create / Update
-  - PUT /api/tasks
-  - PowerShell:
-    ```powershell
-    Invoke-RestMethod -Uri "http://127.0.0.1:8080/api/tasks" -Method Put -ContentType "application/json" -Body '{"name":"Test Task","description":"My first task","command":"echo hello"}'
-    ```
-  - curl.exe:
-    ```powershell
-    curl.exe -X PUT "http://127.0.0.1:8080/api/tasks" -H "Content-Type: application/json" -d "{\"name\":\"Test Task\",\"description\":\"My first task\",\"command\":\"echo hello\"}"
-    ```
+### 4. Delete Task
 
-- List all
-  - GET /api/tasks
-  - Example:
-    ```powershell
-    Invoke-RestMethod -Uri "http://127.0.0.1:8080/api/tasks" -Method Get | ConvertTo-Json -Depth 5
-    ```
+**Endpoint:** `DELETE /api/tasks/{id}`
 
-- Get by id
-  - GET /api/tasks?id={id}
+**Description:** Deletes a task by ID
 
-- Execute
-  - PUT /api/tasks/{id}/execute
-
-- Delete
-  - DELETE /api/tasks/{id}
-
-## Screenshots
-Place screenshots in `screenshots/` so they display on GitHub. Example files:
-- screenshots/add-task.png — show PUT response (200 + JSON)
-- screenshots/get-tasks.png — show GET /api/tasks output (array with created task)
-- screenshots/delete-task.png — show DELETE response
-- screenshots/find-task.png — show GET by id or search result
-
-Open screenshots locally:
-```powershell
-ii .\screenshots\get-tasks.png
-ii .\screenshots
+**Example:**
+```bash
+curl -X DELETE http://localhost:8080/api/tasks/123
 ```
 
-Save API output for screenshot:
-```powershell
-# raw response text (use Invoke-WebRequest to capture raw Content)
-$response = Invoke-WebRequest -Uri "http://127.0.0.1:8080/api/tasks" -Method Get
-$response.Content > tasks.json
-notepad tasks.json
+### 5. Find Tasks by Name
+
+**Endpoint:** `GET /api/tasks/search?name={searchString}`
+
+**Description:** Searches for tasks containing the given string in their name (case-insensitive)
+
+**Example:**
+```bash
+curl -X GET "http://localhost:8080/api/tasks/search?name=Hello"
 ```
 
-## Push to GitHub (one-time)
-```powershell
-git init
-git add .
-git commit -m "Initial commit - task1-rest-api"
-git remote add origin <your-repo-url>
-git branch -M main
-git push -u origin main
-```
-If repo already initialized:
-```powershell
-git add .
-git commit -m "Update README and add screenshots"
-git push
+### 6. Execute Task
+
+**Endpoint:** `PUT /api/tasks/{id}/execute`
+
+**Description:** Executes the shell command associated with a task and stores the execution result
+
+**Example:**
+```bash
+curl -X PUT http://localhost:8080/api/tasks/123/execute
 ```
 
-## Troubleshooting
-- "Command cannot be empty": include the `command` property in JSON.
-- MongoDB connection: verify mongod is running and application.properties is correct.
-- Port in use: set `server.port` in `src/main/resources/application.properties`.
+**Response:**
+```json
+{
+  "startTime": "2025-10-18T10:30:00.000Z",
+  "endTime": "2025-10-18T10:30:01.000Z",
+  "output": "Hello World"
+}
+```
+
+## Security Features
+
+The application validates commands to prevent execution of potentially dangerous operations:
+
+- `rm -rf` commands
+- `format` commands
+- `mkfs` (filesystem creation)
+- `dd` commands with device files
+- Output redirection to device files
+- Command chaining with `||` or `;`
+- Command substitution with `$()` or backticks
 
 ## Testing
-Run unit tests:
+
+Run the unit tests:
+
 ```bash
 mvn test
 ```
 
-## Notes
-- The app validates command strings to block dangerous commands.
-- Include your screenshots in the `screenshots/` folder before pushing so GitHub displays them.
-```// filepath: c:\Users\HP\Documents\task1-rest-api\task1-rest-api\README.md
-# Task 1: Java Backend and REST API
+## Testing with Postman
 
-Simple Spring Boot REST API to store, list, execute and delete shell-command tasks.
+### 1. Import Collection
 
-## Project layout
-- src/main/java/com/kaiburr/taskapp
-  - model/Task.java
-  - model/TaskExecution.java
-  - controller/TaskController.java
-  - repository/TaskRepository.java
-  - service/TaskService.java
-  - Application.java
-- src/main/resources/application.properties
-- screenshots/
-- pom.xml
+Create a new Postman collection and add the following requests:
 
-## Prerequisites
-- Java 17+
-- Maven 3.6+
-- MongoDB (running locally or remotely)
-- Git (to push to GitHub)
-
-## Quick start (Windows PowerShell)
-1. Start MongoDB
-```powershell
-# if installed as a service
-net start MongoDB
-
-# or run manually (adjust dbpath)
-& "C:\Program Files\MongoDB\Server\6.0\bin\mongod.exe" --dbpath "C:\data\db"
-```
-
-2. Build and run
-```powershell
-mvn clean package
-mvn spring-boot:run
-```
-App will run on http://localhost:8080 by default.
-
-## Required JSON fields
-When creating a task, include the "command" field. Example:
+#### Create a Task
+- **Method:** PUT
+- **URL:** `http://localhost:8080/api/tasks`
+- **Headers:** `Content-Type: application/json`
+- **Body (raw JSON):**
 ```json
 {
-  "name": "Test Task",
-  "description": "My first task",
-  "command": "echo hello"
+  "id": "1",
+  "name": "Print Hello",
+  "owner": "John Smith",
+  "command": "echo Hello World"
 }
 ```
 
-## API endpoints
-- Create / Update
-  - PUT /api/tasks
-  - PowerShell:
-    ```powershell
-    Invoke-RestMethod -Uri "http://127.0.0.1:8080/api/tasks" -Method Put -ContentType "application/json" -Body '{"name":"Test Task","description":"My first task","command":"echo hello"}'
-    ```
-  - curl.exe:
-    ```powershell
-    curl.exe -X PUT "http://127.0.0.1:8080/api/tasks" -H "Content-Type: application/json" -d "{\"name\":\"Test Task\",\"description\":\"My first task\",\"command\":\"echo hello\"}"
-    ```
+#### Get All Tasks
+- **Method:** GET
+- **URL:** `http://localhost:8080/api/tasks`
 
-- List all
-  - GET /api/tasks
-  - Example:
-    ```powershell
-    Invoke-RestMethod -Uri "http://127.0.0.1:8080/api/tasks" -Method Get | ConvertTo-Json -Depth 5
-    ```
+#### Get Task by ID
+- **Method:** GET
+- **URL:** `http://localhost:8080/api/tasks?id=1`
 
-- Get by id
-  - GET /api/tasks?id={id}
+#### Search Tasks by Name
+- **Method:** GET
+- **URL:** `http://localhost:8080/api/tasks/search?name=Hello`
 
-- Execute
-  - PUT /api/tasks/{id}/execute
+#### Execute Task
+- **Method:** PUT
+- **URL:** `http://localhost:8080/api/tasks/1/execute`
 
-- Delete
-  - DELETE /api/tasks/{id}
+#### Delete Task
+- **Method:** DELETE
+- **URL:** `http://localhost:8080/api/tasks/1`
+
+## Testing with cURL
+
+### Create a Task
+```bash
+curl -X PUT http://localhost:8080/api/tasks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "1",
+    "name": "List Files",
+    "owner": "Jane Doe",
+    "command": "ls -la"
+  }'
+```
+
+### Get All Tasks
+```bash
+curl -X GET http://localhost:8080/api/tasks
+```
+
+### Get Task by ID
+```bash
+curl -X GET "http://localhost:8080/api/tasks?id=1"
+```
+
+### Search Tasks
+```bash
+curl -X GET "http://localhost:8080/api/tasks/search?name=List"
+```
+
+### Execute Task
+```bash
+curl -X PUT http://localhost:8080/api/tasks/1/execute
+```
+
+### Delete Task
+```bash
+curl -X DELETE http://localhost:8080/api/tasks/1
+```
+
+## Sample Test Scenarios
+
+### Scenario 1: Basic CRUD Operations
+
+1. **Create multiple tasks:**
+```bash
+# Task 1
+curl -X PUT http://localhost:8080/api/tasks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "1",
+    "name": "Echo Hello",
+    "owner": "Alice",
+    "command": "echo Hello World"
+  }'
+
+# Task 2
+curl -X PUT http://localhost:8080/api/tasks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "2",
+    "name": "Print Date",
+    "owner": "Bob",
+    "command": "date"
+  }'
+
+# Task 3
+curl -X PUT http://localhost:8080/api/tasks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "3",
+    "name": "Current Directory",
+    "owner": "Charlie",
+    "command": "pwd"
+  }'
+```
+
+2. **Get all tasks:**
+```bash
+curl -X GET http://localhost:8080/api/tasks
+```
+
+3. **Search for tasks:**
+```bash
+curl -X GET "http://localhost:8080/api/tasks/search?name=Print"
+```
+
+4. **Execute a task:**
+```bash
+curl -X PUT http://localhost:8080/api/tasks/1/execute
+```
+
+5. **Verify execution was stored:**
+```bash
+curl -X GET "http://localhost:8080/api/tasks?id=1"
+```
+
+6. **Delete a task:**
+```bash
+curl -X DELETE http://localhost:8080/api/tasks/3
+```
+
+### Scenario 2: Testing Security Validation
+
+Try to create a task with unsafe command (should be rejected):
+
+```bash
+curl -X PUT http://localhost:8080/api/tasks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "unsafe",
+    "name": "Malicious Task",
+    "owner": "Hacker",
+    "command": "rm -rf /"
+  }'
+```
+
+Expected response: `400 Bad Request` with error message about unsafe command.
 
 ## Screenshots
-Place screenshots in `screenshots/` so they display on GitHub. Example files:
-- screenshots/add-task.png — show PUT response (200 + JSON)
-- screenshots/get-tasks.png — show GET /api/tasks output (array with created task)
-- screenshots/delete-task.png — show DELETE response
-- screenshots/find-task.png — show GET by id or search result
 
-Open screenshots locally:
-```powershell
-ii .\screenshots\get-tasks.png
-ii .\screenshots
-```
+### 1. Get All Tasks
+![Get All Tasks](screenshots/get-tasks.png)
 
-Save API output for screenshot:
-```powershell
-# raw response text (use Invoke-WebRequest to capture raw Content)
-$response = Invoke-WebRequest -Uri "http://127.0.0.1:8080/api/tasks" -Method Get
-$response.Content > tasks.json
-notepad tasks.json
-```
+### 2. Add Task
+![Add Task](screenshots/add-task.png)
 
-## Push to GitHub (one-time)
-```powershell
-git init
-git add .
-git commit -m "Initial commit - task1-rest-api"
-git remote add origin <your-repo-url>
-git branch -M main
-git push -u origin main
-```
-If repo already initialized:
-```powershell
-git add .
-git commit -m "Update README and add screenshots"
-git push
-```
+### 3. Execute Task
+![Execute Task](screenshots/execute-task.png)
+
+### 4. Find Task by Name
+![Find Task](screenshots/find-task.png)
+
+### 5. Delete Task
+![Delete Task](screenshots/delete-task.png)
 
 ## Troubleshooting
-- "Command cannot be empty": include the `command` property in JSON.
-- MongoDB connection: verify mongod is running and application.properties is correct.
-- Port in use: set `server.port` in `src/main/resources/application.properties`.
 
-## Testing
-Run unit tests:
+### MongoDB Connection Issues
+
+If you see connection errors:
+
+1. Verify MongoDB is running:
 ```bash
-mvn test
+# On Linux/macOS
+sudo systemctl status mongodb
+
+# Or check if process is running
+ps aux | grep mongod
 ```
 
+2. Check if MongoDB port is accessible:
+```bash
+telnet localhost 27017
+```
+
+3. Verify connection string in `application.properties`
+
+### Port Already in Use
+
+If port 8080 is already in use, change it in `application.properties`:
+```properties
+server.port=8081
+```
+
+## Technologies Used
+
+- **Java 17** - Programming language
+- **Spring Boot 3.2.0** - Framework
+- **Spring Data MongoDB** - Database integration
+- **MongoDB** - NoSQL database
+- **Maven** - Build tool
+- **JUnit 5** - Testing framework
+
+## API Documentation
+
+For detailed API documentation, you can access Swagger UI (if configured) or refer to the endpoint descriptions above.
+
+## Author
+
+[Your Name]
+
+## License
+
+This project is created for Kaiburr LLC assessment.
+
 ## Notes
-- The app validates command strings to block dangerous commands.
-- Include your screenshots in the `screenshots/` folder before pushing so GitHub displays them.
+
+- Make sure to include screenshots with your name and timestamp as per submission requirements
+- The application validates commands to prevent malicious operations
+- All task executions are stored in the database with timestamps
+- The API supports CORS for frontend integration
