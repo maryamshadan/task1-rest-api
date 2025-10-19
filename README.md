@@ -392,19 +392,19 @@ Expected response: `400 Bad Request` with error message about unsafe command.
 ## Screenshots
 
 ### 1. Get All Tasks
-![Get All Tasks](screenshots/get-tasks.png)
+![Get All Tasks](screenshots/get_task.png)
 
-### 2. Add Task
-![Add Task](screenshots/add-task.png)
+### 2. App Running
+![App Running](screenshots/app_running.png)
 
-### 3. Execute Task
-![Execute Task](screenshots/execute-task.png)
+### 3. Mongodb Connected
+![Mongodb Connected](screenshots/mongo_connected.png)
 
-### 4. Find Task by Name
-![Find Task](screenshots/find-task.png)
+### 4. List Task
+![List Task](screenshots/list_methods.png)
 
 ### 5. Delete Task
-![Delete Task](screenshots/delete-task.png)
+![Delete Task](screenshots/delete_method.png)
 
 ## Troubleshooting
 
