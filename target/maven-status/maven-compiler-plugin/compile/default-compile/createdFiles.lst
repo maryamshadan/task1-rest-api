@@ -1,7 +1,3 @@
-com\kaiburr\taskapp\repository\TaskRepository.class
-com\kaiburr\taskapp\model\TaskExecution.class
-com\kaiburr\taskapp\model\Task.class
-com\kaiburr\taskapp\controller\TaskController.class
-com\kaiburr\taskapp\Application.class
-com\kaiburr\taskapp\controller\RootController.class
-com\kaiburr\taskapp\service\TaskService.class
+com/kaiburr/.DS_Store
+com/.DS_Store
+.DS_Store
